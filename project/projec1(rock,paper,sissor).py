@@ -3,74 +3,87 @@ rock--1
 paper--2
 sissor--3
 """
-import random 
-a=True
-while a==True:
-    try:
-        computer=random.choice([1,2,3])
-        b=True
-        while b==True:
-            print("------------------")
-            print("--rock,paper,sissor--GAME")
-            print("------------------")
-            youstr=str(input("enter your choice:"))
-            print("------------------")
-            if youstr=="rock" or youstr=="paper" or youstr=="sissor":
-                b=False        
-            else:
-              print("??wrong input??\nplease input agian")
 
-        dict1={1:"rock",2:"paper",3:"sissor"}
-        print(f"your choice:{youstr}\ncomputer choice:{dict1[computer]}")
-    except:
-        print("there are some error")
-        print("------------------")  
-    dict2={"rock":1,"paper":2,"sissor":3}
-    you=dict2[youstr]
+# Ensure you have Pillow installed: pip install pillow
 
-    if dict1[computer]==youstr:
-        print("!its a draw!")
-        print("------------------")
-    else:
-        if computer==1 and you==2:
-            print("!!you win!!")
-            print("------------------")
-        elif computer==1 and you==3:
-            print("!!!you lose!!!")
-            print("------------------")
-        elif computer==2 and you==1:
-            print("!!!you lose!!!")
-            print("------------------")
-        elif computer==2 and you==3:
-            print("!!you win!!")
-            print("------------------")
-        elif computer==3 and you==1:
-            print("!!you win!!")
-            print("------------------")
-        elif computer==3 and you==2:
-            print("!!!you lose!!!")
-            print("------------------")
-        else:
-            print("!!something went wrong!!")
-            print("------------------")
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk, ImageDraw
+import random
+
+def game_interface():
+    def play(choice):
+        computer = random.choice([1, 2, 3])
+        dict1 = {1: "rock", 2: "paper", 3: "sissor"}
+        dict2 = {"rock": 1, "paper": 2, "sissor": 3}
+        you = dict2[choice]
+        computer_choice = dict1[computer]
         
-    c=True
-    while c==True:
-        try:
-            end=int(input("enter 4 for continue and 5 for end:"))
-            print("------------------")
-            if end==4 or end==5:
-                c=False
+        result = ""
+        if computer_choice == choice:
+            result = "!It's a draw!"
+        else:
+            if (you == 1 and computer == 3) or (you == 2 and computer == 1) or (you == 3 and computer == 2):
+                result = "!!You win!!"
+                scores['player'] += 1
             else:
-                print("??wrong input??\nplease input agian")
-                print("------------------")
-        except:
-            print("there is a error")
-    if end==4:
-        pass
-    elif end==5:
-        a=False
-        print("!!!Thankyou for playing with me!!!")
-        print("------------------")
-    else:
-        pass
+                result = "!!!You lose!!!"
+                scores['computer'] += 1
+        
+        update_score()
+        messagebox.showinfo("Result", f"Your choice: {choice}\nComputer choice: {computer_choice}\n{result}")
+
+    def update_score():
+        score_label.config(text=f"Player: {scores['player']}  Computer: {scores['computer']}")
+
+    def reset_game():
+        scores['player'] = 0
+        scores['computer'] = 0
+        update_score()
+
+    def on_exit():
+        root.destroy()
+
+    def load_image(filename, fallback_text):
+        try:
+            return ImageTk.PhotoImage(Image.open(filename).resize((80, 80), Image.ANTIALIAS))
+        except FileNotFoundError:
+            img = Image.new('RGB', (80, 80), color = (73, 109, 137))
+            d = ImageDraw.Draw(img)
+            d.text((10, 30), fallback_text, fill=(255, 255, 0))
+            return ImageTk.PhotoImage(img)
+
+    root = tk.Tk()
+    root.title("Rock, Paper, Scissor Game")
+    root.geometry("400x300")
+    root.resizable(False, False)
+
+    scores = {'player': 0, 'computer': 0}
+
+    title_label = tk.Label(root, text="Rock, Paper, Scissor Game", font=("Helvetica", 16, "bold"))
+    title_label.pack(pady=10)
+
+    frame = tk.Frame(root)
+    frame.pack(pady=10)
+
+    rock_img = load_image("rock.png", "Rock")
+    paper_img = load_image("paper.png", "Paper")
+    sissor_img = load_image("sissor.png", "Sissor")
+
+    tk.Button(frame, image=rock_img, command=lambda: play("rock")).grid(row=0, column=0, padx=10)
+    tk.Button(frame, image=paper_img, command=lambda: play("paper")).grid(row=0, column=1, padx=10)
+    tk.Button(frame, image=sissor_img, command=lambda: play("sissor")).grid(row=0, column=2, padx=10)
+
+    score_label = tk.Label(root, text="Player: 0  Computer: 0", font=("Helvetica", 12))
+    score_label.pack(pady=10)
+
+    button_frame = tk.Frame(root)
+    button_frame.pack(pady=10)
+
+    tk.Button(button_frame, text="Reset", command=reset_game, width=10).grid(row=0, column=0, padx=5)
+    tk.Button(button_frame, text="Exit", command=on_exit, width=10).grid(row=0, column=1, padx=5)
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    game_interface()
